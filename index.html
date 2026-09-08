@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Generador de reporte de pausas para agentes de Gen Mobile" />
+    <title>Pause Ledger | Gen Mobile</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">PL</span>
+          <div>
+            <p class="eyebrow">Gen Mobile · Operations</p>
+            <h1>Pause Ledger</h1>
+          </div>
+        </div>
+        <span class="status-pill"><span class="status-dot"></span> Local only</span>
+      </header>
+
+      <section class="intro">
+        <div>
+          <p class="eyebrow accent">Attendance → pause report</p>
+          <h2>Convierte tu reporte de staffing en un CSV listo para trabajar.</h2>
+          <p class="lede">Carga o pega el reporte detallado con las columnas <strong>BUser</strong>, <strong>BreakType</strong>, <strong>PnchIn</strong>, <strong>PnchOut</strong> y <strong>TotalAux</strong>. La herramienta conserva únicamente los 13 agentes configurados.</p>
+        </div>
+        <div class="intro-note">
+          <span class="note-index">01</span>
+          <p>Se procesa todo en tu navegador. Tus datos no salen de esta página.</p>
+        </div>
+      </section>
+
+      <section class="workspace-grid">
+        <div class="panel input-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Source data</p>
+              <h3>Reporte detallado de pausas</h3>
+            </div>
+            <span class="step-label">Paso 1</span>
+          </div>
+
+          <label class="dropzone" id="dropzone" for="fileInput">
+            <input id="fileInput" type="file" accept=".csv,.tsv,.txt" />
+            <span class="upload-icon" aria-hidden="true">↑</span>
+            <span class="drop-title">Suelta un CSV/TSV aquí</span>
+            <span class="drop-copy">o haz clic para elegir un archivo</span>
+          </label>
+          <div class="or-rule"><span>o pega las filas aquí</span></div>
+          <textarea id="sourceInput" spellcheck="false" placeholder="ScheduleStart\tBUser\tCampaign\tTeam\tBreakType\tSchIn\tSchOut\tAuxScheduled\tPnchIn\tPnchOut\tTotalAux"></textarea>
+          <div class="input-actions">
+            <button class="button button-quiet" id="sampleButton" type="button">Cargar ejemplo</button>
+            <span class="file-name" id="fileName">Ningún archivo seleccionado</span>
+          </div>
+        </div>
+
+        <div class="panel settings-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Transform</p>
+              <h3>Reglas de extracción</h3>
+            </div>
+            <span class="step-label">Paso 2</span>
+          </div>
+          <div class="mapping-summary">
+            <div class="mapping-number">13</div>
+            <div><strong>agentes permitidos</strong><span>Mapeo fijo por Getty Username</span></div>
+          </div>
+          <div class="agent-list" id="agentList"></div>
+          <button class="button button-primary" id="generateButton" type="button">Generar reporte <span aria-hidden="true">→</span></button>
+          <p class="helper">El agente se identifica por <strong>BUser</strong>. `PnchIn` y `PnchOut` llenan las horas reales; `TotalAux` llena la duración.</p>
+        </div>
+      </section>
+
+      <section class="results panel" id="resultsPanel" hidden>
+        <div class="results-heading">
+          <div>
+            <p class="eyebrow">Output</p>
+            <h3>Reporte generado</h3>
+          </div>
+          <button class="button button-primary" id="downloadButton" type="button">Descargar CSV <span aria-hidden="true">↓</span></button>
+        </div>
+        <div class="metrics" id="metrics"></div>
+        <div class="table-wrap">
+          <table>
+            <thead id="previewHead"></thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+        <p class="table-note" id="tableNote"></p>
+      </section>
+
+      <footer><span>Pause Ledger</span><span>v1 · navegador local</span></footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
