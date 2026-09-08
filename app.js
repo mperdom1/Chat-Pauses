@@ -111,6 +111,7 @@ function activityForAux(breakType, breakNumber) {
     ticketteam: ['ticketteam', 'Ticket Team', 'NBNP', 'No'],
     email: ['12.', 'Email', 'BNP', 'Yes'],
     'coaching(performance)': ['18.', 'Coaching', 'NBNP', 'No'],
+    'coaching(qa)': ['18.', 'Coaching', 'NBNP', 'No'],
     coaching: ['18.', 'Coaching', 'NBNP', 'No'],
     'technical issues': ['23.', 'Technical Issues', 'NBNP', 'No'],
     teammeeting: ['teammeeting', 'Team Meeting', 'NBNP', 'No'],
