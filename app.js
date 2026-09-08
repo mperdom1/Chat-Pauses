@@ -100,6 +100,9 @@ function activityForAux(breakType, breakNumber) {
   const activityMap = {
     huddle: ['huddle', 'Huddle', 'NBNP', 'No'],
     lunch: ['10.', 'Lunch', 'NBNP', 'No'],
+    bath: ['bb', 'Bath Break', 'NBNP', 'No'],
+    'bath break': ['bb', 'Bath Break', 'NBNP', 'No'],
+    'bath breaks': ['bb', 'Bath Break', 'NBNP', 'No'],
     outbound: ['17.', 'Outbound', 'NBNP', 'No'],
     training: ['19.', 'Training', 'NBNP', 'No'],
     backoffice: ['13.', 'Backoffice', 'BNP', 'Yes'],
