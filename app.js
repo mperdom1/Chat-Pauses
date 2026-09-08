@@ -86,7 +86,7 @@ function durationText(value) {
   if (parts.length === 2) parts.unshift(0);
   if (parts.length !== 3 || parts.some(part => !Number.isFinite(part))) return value || '0:00:00';
   const [hours, minutes, seconds] = parts;
-  return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 function excelDuration(value) { const seconds = durationToSeconds(value); const hours = Math.floor(seconds / 3600); const minutes = Math.floor((seconds % 3600) / 60); const remaining = seconds % 60; return `${hours ? `${hours} hour${hours === 1 ? '' : 's'} ` : ''}${minutes ? `${minutes} minute${minutes === 1 ? '' : 's'} ` : ''}${remaining ? `${remaining} second${remaining === 1 ? '' : 's'}` : ''}`.trim() || '0 seconds'; }
 
@@ -188,7 +188,7 @@ function makeExcelFile(rows) {
     worksheet[XLSX.utils.encode_cell({ r: 11, c: columnIndex })] = { v: columnIndex === 0 ? 'AD02 - DetailsDO.AgentPauses' : '', t: 's', s: subtitleStyle };
   }
   for (let columnIndex = 0; columnIndex < OUTPUT_HEADERS.length; columnIndex += 1) {
-    worksheet[XLSX.utils.encode_cell({ r: 14, c: columnIndex })].s = headerStyle;
+    worksheet[XLSX.utils.encode_cell({ r: 13, c: columnIndex })].s = headerStyle;
   }
   worksheet['!merges'] = [
     { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
