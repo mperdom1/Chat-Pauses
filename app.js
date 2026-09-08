@@ -169,6 +169,27 @@ function makeExcelFile(rows) {
     ...rows
   ];
   const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
+  const baseStyle = { font: { name: 'Arial', sz: 10 }, alignment: { vertical: 'center' } };
+  const sectionStyle = { ...baseStyle, font: { name: 'Arial', sz: 10, bold: true }, fill: { fgColor: { rgb: 'C6C6C6' } } };
+  const titleStyle = { ...baseStyle, font: { name: 'Times New Roman', sz: 20, bold: true } };
+  const subtitleStyle = { ...baseStyle, font: { name: 'Times New Roman', sz: 16, bold: true } };
+  const headerStyle = { ...baseStyle, font: { name: 'Arial', sz: 10, bold: true }, fill: { fgColor: { rgb: 'C6C6C6' } } };
+  for (let rowIndex = 0; rowIndex < sheetRows.length; rowIndex += 1) {
+    for (let columnIndex = 0; columnIndex < sheetRows[rowIndex].length; columnIndex += 1) {
+      const cell = worksheet[XLSX.utils.encode_cell({ r: rowIndex, c: columnIndex })];
+      if (cell) cell.s = baseStyle;
+    }
+  }
+  for (let columnIndex = 0; columnIndex <= 4; columnIndex += 1) {
+    worksheet[XLSX.utils.encode_cell({ r: 2, c: columnIndex })] = { v: columnIndex === 0 ? 'Report Details' : '', t: 's', s: sectionStyle };
+  }
+  for (let columnIndex = 0; columnIndex <= 8; columnIndex += 1) {
+    worksheet[XLSX.utils.encode_cell({ r: 10, c: columnIndex })] = { v: columnIndex === 0 ? 'Detail of agent pauses' : '', t: 's', s: titleStyle };
+    worksheet[XLSX.utils.encode_cell({ r: 11, c: columnIndex })] = { v: columnIndex === 0 ? 'AD02 - DetailsDO.AgentPauses' : '', t: 's', s: subtitleStyle };
+  }
+  for (let columnIndex = 0; columnIndex < OUTPUT_HEADERS.length; columnIndex += 1) {
+    worksheet[XLSX.utils.encode_cell({ r: 14, c: columnIndex })].s = headerStyle;
+  }
   worksheet['!merges'] = [
     { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
     { s: { r: 2, c: 0 }, e: { r: 2, c: 4 } },
