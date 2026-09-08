@@ -83,7 +83,7 @@ function durationToSeconds(value) {
 }
 function durationText(value) {
   const parts = value.trim().split(':').map(Number);
-  if (parts.length === 2) parts.unshift(0);
+  if (parts.length === 2) parts.push(0);
   if (parts.length !== 3 || parts.some(part => !Number.isFinite(part))) return value || '0:00:00';
   const [hours, minutes, seconds] = parts;
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
