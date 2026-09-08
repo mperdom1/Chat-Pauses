@@ -23,7 +23,7 @@
       <section class="intro">
         <div>
           <p class="eyebrow accent">Attendance → pause report</p>
-          <h2>Convierte tu reporte de staffing en un CSV listo para trabajar.</h2>
+          <h2>Convierte tu reporte de staffing en un Excel listo para trabajar.</h2>
           <p class="lede">Carga o pega el reporte detallado con las columnas <strong>BUser</strong>, <strong>BreakType</strong>, <strong>PnchIn</strong>, <strong>PnchOut</strong> y <strong>TotalAux</strong>. La herramienta conserva únicamente los 13 agentes configurados.</p>
         </div>
         <div class="intro-note">
@@ -80,7 +80,7 @@
             <p class="eyebrow">Output</p>
             <h3>Reporte generado</h3>
           </div>
-          <button class="button button-primary" id="downloadButton" type="button">Descargar CSV <span aria-hidden="true">↓</span></button>
+          <button class="button button-primary" id="downloadButton" type="button">Descargar Excel <span aria-hidden="true">↓</span></button>
         </div>
         <div class="metrics" id="metrics"></div>
         <div class="table-wrap">
@@ -94,6 +94,7 @@
 
       <footer><span>Pause Ledger</span><span>v1 · navegador local</span></footer>
     </main>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

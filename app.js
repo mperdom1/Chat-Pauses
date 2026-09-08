@@ -77,21 +77,50 @@ function weekText(date) {
   monday.setDate(monday.getDate() - day + 1);
   return dateText(monday);
 }
-function durationToSeconds(value) { const parts = value.split(':').map(Number); return (parts[0] * 3600) + (parts[1] * 60) + parts[2]; }
-function durationText(value) { return value || '00:00:00'; }
+function durationToSeconds(value) {
+  const parts = value.split(':').map(Number);
+  return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
+}
+function durationText(value) {
+  const parts = value.trim().split(':').map(Number);
+  if (parts.length === 2) parts.unshift(0);
+  if (parts.length !== 3 || parts.some(part => !Number.isFinite(part))) return value || '0:00:00';
+  const [hours, minutes, seconds] = parts;
+  return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
 function excelDuration(value) { const seconds = durationToSeconds(value); const hours = Math.floor(seconds / 3600); const minutes = Math.floor((seconds % 3600) / 60); const remaining = seconds % 60; return `${hours ? `${hours} hour${hours === 1 ? '' : 's'} ` : ''}${minutes ? `${minutes} minute${minutes === 1 ? '' : 's'} ` : ''}${remaining ? `${remaining} second${remaining === 1 ? '' : 's'}` : ''}`.trim() || '0 seconds'; }
 
 function activityForAux(breakType, breakNumber) {
   const normalized = breakType.trim().toLowerCase();
   if (normalized === 'break') {
-    if (breakNumber === 1) return ['Break 1', '15'];
-    if (breakNumber === 2) return ['Break 2', '16'];
-    return ['Bath Break', 'bb'];
+    if (breakNumber === 1) return ['15.', 'Break 1', 'NBNP', 'No'];
+    if (breakNumber === 2) return ['16.', 'Break 2', 'NBNP', 'No'];
+    return ['bb', 'Bath Break', 'NBNP', 'No'];
   }
-  if (normalized === 'lunch') return ['Lunch', '10'];
-  if (normalized === 'coaching(performance)') return ['Coaching', ''];
-  if (normalized === 'team meeting') return ['Meeting', ''];
-  return [breakType.trim(), ''];
+  const activityMap = {
+    huddle: ['huddle', 'Huddle', 'NBNP', 'No'],
+    lunch: ['10.', 'Lunch', 'NBNP', 'No'],
+    outbound: ['17.', 'Outbound', 'NBNP', 'No'],
+    training: ['19.', 'Training', 'NBNP', 'No'],
+    backoffice: ['13.', 'Backoffice', 'BNP', 'Yes'],
+    'supervisor approval pause': ['25.', 'Supervisor Approval Pause', 'NBNP', 'No'],
+    'chat team': ['39.', 'Chat Team', 'NBNP', 'No'],
+    ticketteam: ['ticketteam', 'Ticket Team', 'NBNP', 'No'],
+    email: ['12.', 'Email', 'BNP', 'Yes'],
+    'coaching(performance)': ['18.', 'Coaching', 'NBNP', 'No'],
+    coaching: ['18.', 'Coaching', 'NBNP', 'No'],
+    'technical issues': ['23.', 'Technical Issues', 'NBNP', 'No'],
+    teammeeting: ['teammeeting', 'Team Meeting', 'NBNP', 'No'],
+    'team meeting': ['teammeeting', 'Team Meeting', 'NBNP', 'No'],
+    'bo team': ['40.', 'BO Team', 'NBNP', 'No'],
+    'master team': ['42.', 'Master Team', 'NBNP', 'No'],
+    '-': ['-', '-', 'NBNP', 'No'],
+    meeting: ['36.', 'Meeting', 'NBNP', 'No'],
+    'ticket team': ['38.', 'Ticket team', 'NBNP', 'No'],
+    nesting: ['nesting', 'Training', 'NBNP', 'No'],
+    'sdr team': ['41.', 'SDR Team', 'NBNP', 'No']
+  };
+  return activityMap[normalized] || ['', breakType.trim(), 'NBNP', 'No'];
 }
 
 function reportDateTime(value) { return value ? value.replace(/^(\d{2})-(\d{2})-(\d{4})\s+/, '$1/$2 - ') : ''; }
@@ -108,12 +137,52 @@ function buildRows(rows) {
       const dateKey = (row.pnchin || row.schin || row.schedulestart || '').slice(0, 10);
       const countKey = `${agent.username}|${dateKey}`;
       const breakNumber = row.breaktype.trim().toLowerCase() === 'break' ? (breakCounts.set(countKey, (breakCounts.get(countKey) || 0) + 1), breakCounts.get(countKey)) : 0;
-      const [activity, code] = activityForAux(row.breaktype, breakNumber);
-      return [agent.agent, `sip/${agent.extension}`, code, activity, 'NBNP', 'No', reportDateTime(row.pnchin), reportDateTime(row.pnchout), durationText(row.totalaux)];
+      const [code, activity, pauseType, billable] = activityForAux(row.breaktype, breakNumber);
+      return [agent.agent, `sip/${agent.extension}`, code, activity, pauseType, billable, reportDateTime(row.pnchin), reportDateTime(row.pnchout), durationText(row.totalaux)];
     });
 }
 function escapeCsv(value) { const text = String(value ?? ''); return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text; }
 function makeCsv(rows) { return [OUTPUT_HEADERS, ...rows].map(row => row.map(escapeCsv).join(',')).join('\n'); }
+function reportStamp() {
+  return new Date().toLocaleString('en-US', { month: 'long', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+}
+function makeExcelFile(rows) {
+  if (!window.XLSX) throw new Error('No se pudo cargar el exportador de Excel. Recarga la página e inténtalo de nuevo.');
+  const now = new Date();
+  const stamp = reportStamp();
+  const periodDate = `${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/${now.getFullYear()}`;
+  const sheetRows = [
+    [`Produced by QueueMetrics. - ${stamp}`],
+    [],
+    ['Report Details'],
+    ['Report generated on:', stamp],
+    ['Atomic queue(s) considered:', 'Gen Mobile'],
+    ['Period start date:', `${periodDate} 00:00`],
+    ['Period end date:', `${periodDate} 23:59`],
+    ['Total calls processed:', `${rows.length} Auxs`],
+    ['Ratio:', '0.0% Unanswered'],
+    [],
+    ['Detail of agent pauses'],
+    ['AD02 - DetailsDO.AgentPauses'],
+    [],
+    OUTPUT_HEADERS,
+    ...rows
+  ];
+  const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
+  worksheet['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 4 } },
+    { s: { r: 10, c: 0 }, e: { r: 10, c: 8 } },
+    { s: { r: 11, c: 0 }, e: { r: 11, c: 8 } }
+  ];
+  worksheet['!cols'] = [
+    { wch: 42 }, { wch: 14 }, { wch: 12 }, { wch: 24 }, { wch: 13 },
+    { wch: 12 }, { wch: 23 }, { wch: 23 }, { wch: 12 }
+  ];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Pause Details');
+  XLSX.writeFile(workbook, `pause-details-${now.toISOString().slice(0, 10)}.xlsx`);
+}
 function renderAgents() { document.querySelector('#agentList').innerHTML = AGENTS.map(agent => `<div class="agent-item" title="${agent.agent}"><strong>${agent.empId}</strong>${agent.shortName} · ${agent.extension}</div>`).join(''); }
 
 function renderResults(rows) {
@@ -134,5 +203,5 @@ fileInput.addEventListener('change', event => { const [file] = event.target.file
 ['dragleave', 'drop'].forEach(eventName => dropzone.addEventListener(eventName, event => { event.preventDefault(); dropzone.classList.remove('dragging'); }));
 dropzone.addEventListener('drop', event => { const [file] = event.dataTransfer.files; if (!file) return; fileName.textContent = file.name; const reader = new FileReader(); reader.onload = () => { sourceInput.value = reader.result; }; reader.readAsText(file); });
 document.querySelector('#generateButton').addEventListener('click', () => { try { reportRows = parseReport(sourceInput.value); const rows = buildRows(reportRows); if (!rows.length) throw new Error('No hubo coincidencias entre BUser y Getty Username, o no hay pausas con PnchIn, PnchOut y TotalAux.'); renderResults(rows); } catch (error) { showError(error.message); } });
-document.querySelector('#downloadButton').addEventListener('click', () => { const blob = new Blob([`\uFEFF${makeCsv(outputRows)}`], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `pause-report-${new Date().toISOString().slice(0, 10)}.csv`; link.click(); URL.revokeObjectURL(link.href); });
+document.querySelector('#downloadButton').addEventListener('click', () => { try { makeExcelFile(outputRows); } catch (error) { showError(error.message); } });
 renderAgents();
